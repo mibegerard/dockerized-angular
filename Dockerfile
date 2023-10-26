@@ -11,9 +11,9 @@ RUN npm install -g @angular/cli
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# Copy the source code and build the Angular application
+# Copy the source code and build the Angular application for production
 COPY . .
-RUN ng build --prod
+RUN ng build --configuration=production
 
 # Stage 2: Serve the Production Build
 FROM nginx:alpine
