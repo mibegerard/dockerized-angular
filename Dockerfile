@@ -1,18 +1,28 @@
-# Use an official Node.js runtime as the base image
-FROM node:16
+# Stage 1: Build the Angular Application
+FROM node:16 as builder
 
 RUN mkdir /project
 WORKDIR /project
 
+# Install Angular CLI
 RUN npm install -g @angular/cli
 
+# Copy package.json and package-lock.json for dependencies
 COPY package.json package-lock.json ./
 RUN npm ci
 
+# Copy the source code and build the Angular application
 COPY . .
+RUN ng build --prod
 
-# Expose the default Angular development port (4200)
-EXPOSE 4200
+# Stage 2: Serve the Production Build
+FROM nginx:alpine
 
-# Start the Angular development server
-CMD ["npm", "start"]
+# Copy the production build from the builder stage to the Nginx server
+COPY --from=builder /project/dist/* /usr/share/nginx/html/
+
+# Expose the default Nginx port (80)
+EXPOSE 80
+
+# Start the Nginx server
+CMD ["nginx", "-g", "daemon off;"]
